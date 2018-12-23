@@ -50,7 +50,7 @@ function insertQuote(quote: string, selection: Selection, textEditor: TextEditor
 			return cloneSelection(selection, 1, 1);
 		} else if (context.inString) {
 			// insert a single quote, but escape it if necessary
-			if (context.quoteMark === quote) {
+			if (context.quoteMark === quote && !context.escaped && context.literalEnd !== -1) {
 				edit.insert(selection.start, '\\' + quote);
 				return cloneSelection(selection, 2, 2);
 			}
@@ -63,6 +63,12 @@ function insertQuote(quote: string, selection: Selection, textEditor: TextEditor
 			const newContext = manualStringContext(line, cloneSelection(selection, 1, 1));
 			if (newContext.inString && newContext.literalEnd > 0) {
 				// insert just one quote to create the string
+				edit.insert(selection.start, quote);
+				return cloneSelection(selection, 1, 1);
+			}
+
+			// insert just one if we're immediately after another quote character
+			if (selection.start.character >= 1 && document.getText(cloneSelection(selection, -1, 0)) === quote) {
 				edit.insert(selection.start, quote);
 				return cloneSelection(selection, 1, 1);
 			}

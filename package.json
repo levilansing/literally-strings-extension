@@ -3,7 +3,7 @@
 	"displayName": "Literally Strings",
 	"description": "String coding assistance for VS Code (JS/TS)",
 	"publisher": "LeviLansing",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/levilansing/literally-strings-extension.git"
