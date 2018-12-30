@@ -1,9 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import {commands, ExtensionContext, Position, Selection, TextEditor, TextEditorEdit, TextDocument} from 'vscode';
-import {stringContext, StringContext, manualStringContext} from './util/stringContext';
+import {commands, ExtensionContext, Selection, TextDocument, TextEditor, TextEditorEdit} from 'vscode';
+import {cloneSelection, cloneSelectionStart, createSelection} from './util/cloneSelection';
+import {manualStringContext, stringContext, StringContext} from './util/stringContext';
 import {toggleStringEscapes} from './util/toggleStringEscapes';
-import {cloneSelection, cloneSelectionStart} from './util/cloneSelection';
 
 function insertMarkdownTick(selection: Selection, textEditor: TextEditor, edit: TextEditorEdit) {
 	const document = textEditor.document;
@@ -44,7 +44,11 @@ function insertQuote(quote: string, selection: Selection, textEditor: TextEditor
 		if (document.getText(cloneSelection(selection, 0, 1)) === quote && !context.escaped) {
 			// allow typing over an identical quote character, unless our cursor is escaped
 			return cloneSelection(selection, 1, 1);
-		} else if (context.inRegex) {
+		} else if (!context.inString && selection.start.character > 0 && document.getText(cloneSelection(selection, -1, 0)).match(/\w/)) {
+			// insert a single quote after a word character
+			edit.insert(selection.start, quote);
+			return cloneSelection(selection, 1, 1);
+		} else if (context.inRegex || context.inComment) {
 			// insert a single quote
 			edit.insert(selection.start, quote);
 			return cloneSelection(selection, 1, 1);
@@ -57,11 +61,11 @@ function insertQuote(quote: string, selection: Selection, textEditor: TextEditor
 			edit.insert(selection.start, quote);
 			return cloneSelection(selection, 1, 1);
 		} else {
-			// check if we WOULD be in a string if we typed one quote
+			// check if we WOULD have an even number of paired quotes if we typed just one
 			let line = document.lineAt(selection.start.line).text;
 			line = line.slice(0, selection.start.character) + quote + line.slice(selection.start.character);
-			const newContext = manualStringContext(line, cloneSelection(selection, 1, 1));
-			if (newContext.inString && newContext.literalEnd > 0) {
+			const newContext = manualStringContext(line, createSelection(0, line.length));
+			if (!newContext.inString) {
 				// insert just one quote to create the string
 				edit.insert(selection.start, quote);
 				return cloneSelection(selection, 1, 1);
@@ -99,6 +103,11 @@ function insertQuote(quote: string, selection: Selection, textEditor: TextEditor
 				edit.replace(selection, `${quote}${text}${quote}`);
 				return cloneSelection(selection, 1, 1);
 			}
+		} else if (context.inComment) {
+			// wrap with quotes, no escaping
+			const quotedText = `${quote}${text}${quote}`;
+			edit.replace(selection, quotedText);
+			return cloneSelection(selection, 1, 1);
 		} else {
 			// wrap with quotes, and escape as needed
 			const quotedText = toggleStringEscapes(`-${text}-`, quote).string;
@@ -110,7 +119,7 @@ function insertQuote(quote: string, selection: Selection, textEditor: TextEditor
 
 function insertAndToggleString(context: StringContext, selection: Selection, replaceBefore: string, replaceAfter: string, document: TextDocument, edit: TextEditorEdit) {
 	const line = selection.start.line;
-	const stringSelection = new Selection(new Position(line, context.literalStart), new Position(line, context.literalEnd + 1));
+	const stringSelection = createSelection(line, context.literalStart, context.literalEnd + 1);
 	const wholeString = document.getText(stringSelection);
 	const result = toggleStringEscapes(wholeString, '`', selection.start.character - context.literalStart, selection.end.character - context.literalStart);
 	const replacement =
@@ -156,8 +165,8 @@ function insertOpenCurly(selection: Selection, textEditor: TextEditor, edit: Tex
 		return cloneSelection(selection, 1, 1);
 	}
 
-	const prevChar = document.getText(new Selection(new Position(selection.start.line, selection.start.character - 1), new Position(selection.start.line, selection.start.character)));
-	const nextChar = document.getText(new Selection(new Position(selection.start.line, selection.end.character), new Position(selection.start.line, selection.end.character + 1)));
+	const prevChar = document.getText(createSelection(selection.start.line, selection.start.character - 1, selection.start.character));
+	const nextChar = document.getText(createSelection(selection.start.line, selection.end.character, selection.end.character + 1));
 	if (prevChar === '$' && nextChar !== '{' && nextChar !== '}') {
 		const context = stringContext(document, selection);
 		if (context.inString) {

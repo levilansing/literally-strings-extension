@@ -7,6 +7,9 @@ export function cloneSelection(selection: Selection, startOffset = 0, endOffset 
 }
 
 export function cloneSelectionStart(selection: Selection, offset = 0) {
-	const position = new Position(selection.start.line, selection.start.character + offset);
-	return new Selection(position, position);
+	return createSelection(selection.start.line, selection.start.character + offset);
+}
+
+export function createSelection(line: number, start: number, end: number = start) {
+	return new Selection(new Position(line, start), new Position(line, end));
 }

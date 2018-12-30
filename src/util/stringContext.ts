@@ -1,11 +1,12 @@
 import {Selection, TextDocument} from 'vscode';
 
-const TOKENIZER = /[\\/'"`]|\${|{|}|\$|[^\\/'"`{}\$]+|$/g;
+const TOKENIZER = /\/\/|\/\*|[\\/'"`]|\${|{|}|\$|\*\/|\*|[^\\/\*'"`{}\$]+|$/g;
 
 export interface StringContext {
   escaped: boolean;
   inRegex: boolean;
   inString: boolean;
+  inComment: boolean;
   wrapsString: boolean;
   quoteMark: string;
   literalStart: number;
@@ -16,8 +17,10 @@ interface TokenizerContext {
   escaped: boolean;
   inRegex: boolean;
   inString: boolean;
+  inComment: boolean;
   wrapsString: boolean;
   quoteMark: string;
+  commentMark: string;
   literalStart: number;
   literalEnd: number;
   index: number;
@@ -29,8 +32,10 @@ function emptyContext(): TokenizerContext {
     escaped: false,
     inRegex: false,
     inString: false,
+    inComment: false,
     wrapsString: false,
     quoteMark: '',
+    commentMark: '',
     literalStart: -1,
     literalEnd: -1,
     index: 0,
@@ -39,8 +44,8 @@ function emptyContext(): TokenizerContext {
 }
 
 export function tokenizerToStringContext(context: TokenizerContext) {
-  const {escaped, inRegex, inString, wrapsString, quoteMark, literalStart, literalEnd} = context;
-  return {escaped, inRegex, inString, wrapsString, quoteMark, literalStart, literalEnd};
+  const {escaped, inRegex, inString, inComment, wrapsString, quoteMark, literalStart, literalEnd} = context;
+  return {escaped, inRegex, inString, inComment, wrapsString, quoteMark, literalStart, literalEnd};
 }
 
 export function stringContext(document: TextDocument, selection: Selection): StringContext {
@@ -125,7 +130,7 @@ export function buildContext(line: string, selection: Selection, iterator?: (con
       case "'":
       case '"':
       case '`':
-        if (context.inRegex || context.escaped || (context.inString && context.quoteMark !== match[0])) {
+        if (context.inRegex || context.escaped || context.inComment || (context.inString && context.quoteMark !== match[0])) {
           continue;
         }
         context.quoteMark = match[0];
@@ -138,7 +143,7 @@ export function buildContext(line: string, selection: Selection, iterator?: (con
         break;
 
       case '/':
-        if (context.inString || context.escaped) {
+        if (context.inString || context.escaped || context.inComment) {
           continue;
         }
         if ((context.inRegex = !context.inRegex)) {
@@ -158,13 +163,13 @@ export function buildContext(line: string, selection: Selection, iterator?: (con
         break;
 
       case '{':
-        if (!context.inString && !context.inRegex) {
+        if (!context.inString && !context.inRegex && !context.inComment) {
           context.blockDepth++;
         }
         break;
 
       case '}':
-        if (!context.inRegex && !context.inString) {
+        if (!context.inRegex && !context.inString && !context.inComment) {
           context.blockDepth--;
           if (context.blockDepth < 0) {
             if (stack.length > 0) {
@@ -177,8 +182,23 @@ export function buildContext(line: string, selection: Selection, iterator?: (con
         break;
 
       case '\\':
-        if (!context.escaped) {
+        if (!context.escaped && !context.inComment) {
           escaping = true;
+        }
+        break;
+
+      case '//':
+      case '/*':
+        if (!context.inString && !context.inRegex && !context.inComment) {
+          context.inComment = true;
+          context.commentMark = match[0];
+        }
+        break;
+
+      case '*/':
+        if (context.inComment && context.commentMark === '/*') {
+          // ends a comment
+          context.inComment = false;
         }
         break;
 
