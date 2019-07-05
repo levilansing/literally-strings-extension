@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import {commands, ExtensionContext, Selection, TextDocument, TextEditor, TextEditorEdit} from 'vscode';
 import {cloneSelection, cloneSelectionStart, createSelection} from './util/cloneSelection';
-import {manualStringContext, stringContext, StringContext} from './util/stringContext';
+import {stringContext, StringContext} from './util/stringContext';
 import {toggleStringEscapes} from './util/toggleStringEscapes';
 
 function insertMarkdownTick(selection: Selection, textEditor: TextEditor, edit: TextEditorEdit) {
@@ -44,39 +44,18 @@ function insertQuote(quote: string, selection: Selection, textEditor: TextEditor
 		if (document.getText(cloneSelection(selection, 0, 1)) === quote && !context.escaped) {
 			// allow typing over an identical quote character, unless our cursor is escaped
 			return cloneSelection(selection, 1, 1);
-		} else if (!context.inString && selection.start.character > 0 && document.getText(cloneSelection(selection, -1, 0)).match(/\w/)) {
-			// insert a single quote after a word character
+		} else if (
+			(selection.start.character > 0 && document.getText(cloneSelection(selection, -1, 0)).match(/[\w'"\`]/))
+			|| document.getText(cloneSelection(selection, 1, 0)).match(/[\w'"\`]/)
+		) {
+			// insert a single quote when next to a word character or opposite quote
 			edit.insert(selection.start, quote);
 			return cloneSelection(selection, 1, 1);
-		} else if (context.inRegex || context.inComment) {
+		} else if (context.inRegex) {
 			// insert a single quote
 			edit.insert(selection.start, quote);
 			return cloneSelection(selection, 1, 1);
-		} else if (context.inString) {
-			// insert a single quote, but escape it if necessary
-			if (context.quoteMark === quote && !context.escaped && context.literalEnd !== -1) {
-				edit.insert(selection.start, '\\' + quote);
-				return cloneSelection(selection, 2, 2);
-			}
-			edit.insert(selection.start, quote);
-			return cloneSelection(selection, 1, 1);
 		} else {
-			// check if we WOULD have an even number of paired quotes if we typed just one
-			let line = document.lineAt(selection.start.line).text;
-			line = line.slice(0, selection.start.character) + quote + line.slice(selection.start.character);
-			const newContext = manualStringContext(line, createSelection(0, line.length));
-			if (!newContext.inString) {
-				// insert just one quote to create the string
-				edit.insert(selection.start, quote);
-				return cloneSelection(selection, 1, 1);
-			}
-
-			// insert just one if we're immediately after another quote character
-			if (selection.start.character >= 1 && document.getText(cloneSelection(selection, -1, 0)) === quote) {
-				edit.insert(selection.start, quote);
-				return cloneSelection(selection, 1, 1);
-			}
-
 			// insert two quotes
 			edit.insert(selection.start, quote + quote);
 			return cloneSelection(selection, 1, 1);
@@ -93,16 +72,6 @@ function insertQuote(quote: string, selection: Selection, textEditor: TextEditor
 			const quotedText = toggleStringEscapes(text, quote).string;
 			edit.replace(selection, quotedText);
 			return cloneSelection(selection, 0, quotedText.length - text.length);
-		} else if (context.inString) {
-			if (context.quoteMark === quote && !context.escaped) {
-				// use escapes on new quotes
-				edit.replace(selection, `\\${quote}${text}\\${quote}`);
-				return cloneSelection(selection, 2, 2);
-			} else {
-				// wrap with quotes (no escapes needed)
-				edit.replace(selection, `${quote}${text}${quote}`);
-				return cloneSelection(selection, 1, 1);
-			}
 		} else if (context.inComment) {
 			// wrap with quotes, no escaping
 			const quotedText = `${quote}${text}${quote}`;
