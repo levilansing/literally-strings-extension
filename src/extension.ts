@@ -25,8 +25,11 @@ function insertMarkdownTick(selection: Selection, textEditor: TextEditor, edit: 
 	} else if (document.getText(cloneSelection(selection, 0, 1)) === '`') {
 		// allow typing over an identical quote character
 		return cloneSelection(selection, 1, 1);
-	} else if (selection.start.character >= 1 && document.getText(cloneSelection(selection, -1, 0)) === '`') {
-		// insert just one if we're immediately after another backtick'
+	} else if (
+		(selection.start.character > 0 && document.getText(cloneSelection(selection, -1, 0)).match(/[\w'"\`]/))
+		|| document.getText(cloneSelection(selection, 1, 0)).match(/[\w'"\`]/)
+	) {
+		// insert just one if we're next to a word character or quote
 		edit.insert(selection.start, '`');
 		return cloneSelection(selection, 1, 1);
 	}
@@ -215,6 +218,35 @@ export function activate(context: ExtensionContext) {
 			});
 		}
 	}));
+
+	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-close-curly', (textEditor: TextEditor) => {
+		overwrite('}', textEditor);
+	}));
+
+	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-close-brace', (textEditor: TextEditor) => {
+		overwrite(']', textEditor);
+	}));
+
+	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-close-paren', (textEditor: TextEditor) => {
+		overwrite(')', textEditor);
+	}));
+}
+
+export function overwrite(char: string, textEditor: TextEditor) {
+	forEachSelection(textEditor, (selection, textEditor, edit) => {
+		if (!selection.isEmpty) {
+			edit.replace(selection, char);
+			return cloneSelectionStart(selection, 1);
+		} else {
+			// should we overwrite?
+			if (textEditor.document.getText(cloneSelection(selection, 0, 1)) === char) {
+				return cloneSelection(selection, 1, 1);
+			} else {
+				edit.replace(selection, char);
+				return cloneSelection(selection, 1, 1);
+			}
+		}
+	});
 }
 
 // this method is called when your extension is deactivated

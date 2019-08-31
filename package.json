@@ -3,7 +3,7 @@
 	"displayName": "Literally Strings",
 	"description": "String coding assistance for VS Code (JS/TS)",
 	"publisher": "LeviLansing",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/levilansing/literally-strings-extension.git"
@@ -19,7 +19,10 @@
 		"onCommand:extension.ls-double-quote",
 		"onCommand:extension.ls-back-tick-quote",
 		"onCommand:extension.ls-insert-interpolation",
-		"onCommand:extension.ls-insert-open-curly"
+		"onCommand:extension.ls-insert-open-curly",
+		"onCommand:extension.ls-insert-close-curly",
+		"onCommand:extension.ls-insert-close-brace",
+		"onCommand:extension.ls-insert-close-paren"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -47,6 +50,21 @@
 			{
 				"command": "extension.ls-insert-open-curly",
 				"key": "shift+[",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "extension.ls-insert-close-curly",
+				"key": "shift+]",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "extension.ls-insert-close-brace",
+				"key": "]",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "extension.ls-insert-close-paren",
+				"key": "shift+0",
 				"when": "editorTextFocus && !editorReadonly"
 			}
 		]
