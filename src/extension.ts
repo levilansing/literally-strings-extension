@@ -230,6 +230,10 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-close-paren', (textEditor: TextEditor) => {
 		overwrite(')', textEditor);
 	}));
+
+	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-semi-colon', (textEditor: TextEditor) => {
+		overwrite(';', textEditor);
+	}));
 }
 
 export function overwrite(char: string, textEditor: TextEditor) {
