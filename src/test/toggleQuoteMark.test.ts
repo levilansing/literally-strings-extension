@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {toggleStringEscapes} from '../util/toggleStringEscapes';
+import {toggleStringEscapes} from '../toggleStringEscapes';
 
 suite("ToggleQuoteMark", function () {
   test("removes escapes where possible", function () {

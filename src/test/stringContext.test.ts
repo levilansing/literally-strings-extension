@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import {buildContext, tokenizerToStringContext} from '../util/stringContext';
-import {createSelection} from '../util/cloneSelection';
+import {createSelection} from '../cloneSelection';
+import {buildContext, tokenizerToStringContext} from '../stringContext';
 
 suite("StringContext", function () {
-    test("when in a regex", function() {
+    test("when in a regex", function () {
         //                                     |-|
         const line = `if ('foo\\'"\\\\'.match(/foo'"/)) {`;
         assert.deepEqual(

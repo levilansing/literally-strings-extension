@@ -1,9 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import {commands, ExtensionContext, Selection, TextDocument, TextEditor, TextEditorEdit} from 'vscode';
-import {cloneSelection, cloneSelectionStart, createSelection} from './util/cloneSelection';
-import {stringContext, StringContext} from './util/stringContext';
-import {toggleStringEscapes} from './util/toggleStringEscapes';
+import {cloneSelection, cloneSelectionStart, createSelection} from './cloneSelection';
+import {stringContext, StringContext} from './stringContext';
+import {toggleStringEscapes} from './toggleStringEscapes';
 
 function insertMarkdownTick(selection: Selection, textEditor: TextEditor, edit: TextEditorEdit) {
 	const document = textEditor.document;
@@ -180,15 +180,15 @@ function isLangInterpolationKnown(languageId: string) {
 
 // this method is called when your extension is activated
 export function activate(context: ExtensionContext) {
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-single-quote', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.singleQuote', (textEditor: TextEditor) => {
 		forEachSelection(textEditor, (selection, textEditor, edit) => insertQuote("'", selection, textEditor, edit));
 	}));
 
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-double-quote', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.doubleQuote', (textEditor: TextEditor) => {
 		forEachSelection(textEditor, (selection, textEditor, edit) => insertQuote('"', selection, textEditor, edit));
 	}));
 
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-back-tick-quote', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.backTickQuote', (textEditor: TextEditor) => {
 		if (textEditor.document.languageId === 'markdown') {
 			forEachSelection(textEditor, (selection, textEditor, edit) => insertMarkdownTick(selection, textEditor, edit));
 		} else {
@@ -196,7 +196,7 @@ export function activate(context: ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-interpolation', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.insertInterpolation', (textEditor: TextEditor) => {
 		if (isLangInterpolationKnown(textEditor.document.languageId)) {
 			forEachSelection(textEditor, (selection, textEditor, edit) => insertInterpolation(selection, textEditor, edit));
 		} else {
@@ -207,7 +207,7 @@ export function activate(context: ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-open-curly', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.insertOpenCurly', (textEditor: TextEditor) => {
 		if (isLangInterpolationKnown(textEditor.document.languageId)) {
 			forEachSelection(textEditor, (selection, textEditor, edit) => insertOpenCurly(selection, textEditor, edit));
 		} else {
@@ -219,19 +219,19 @@ export function activate(context: ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-close-curly', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.insertCloseCurly', (textEditor: TextEditor) => {
 		overwrite('}', textEditor);
 	}));
 
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-close-brace', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.insertCloseBrace', (textEditor: TextEditor) => {
 		overwrite(']', textEditor);
 	}));
 
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-close-paren', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.insertCloseParen', (textEditor: TextEditor) => {
 		overwrite(')', textEditor);
 	}));
 
-	context.subscriptions.push(commands.registerTextEditorCommand('extension.ls-insert-semi-colon', (textEditor: TextEditor) => {
+	context.subscriptions.push(commands.registerTextEditorCommand('literallyStrings.insertSemiColon', (textEditor: TextEditor) => {
 		overwrite(';', textEditor);
 	}));
 }

@@ -3,11 +3,14 @@
 	"displayName": "Literally Strings",
 	"description": "String coding assistance for VS Code (JS/TS)",
 	"publisher": "LeviLansing",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/levilansing/literally-strings-extension.git"
+		"url": "https://github.com/levilansing/literally-strings-literallyStringsgit"
 	},
+	"files": [
+		"out/"
+	],
 	"engines": {
 		"vscode": "^1.30.0"
 	},
@@ -15,61 +18,61 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.ls-single-quote",
-		"onCommand:extension.ls-double-quote",
-		"onCommand:extension.ls-back-tick-quote",
-		"onCommand:extension.ls-insert-interpolation",
-		"onCommand:extension.ls-insert-open-curly",
-		"onCommand:extension.ls-insert-close-curly",
-		"onCommand:extension.ls-insert-close-brace",
-		"onCommand:extension.ls-insert-close-paren",
-		"onCommand:extension.ls-insert-semi-colon"
+		"onCommand:literallyStrings.singleQuote",
+		"onCommand:literallyStrings.doubleQuote",
+		"onCommand:literallyStrings.backTickQuote",
+		"onCommand:literallyStrings.insertInterpolation",
+		"onCommand:literallyStrings.insertOpenCurly",
+		"onCommand:literallyStrings.insertCloseCurly",
+		"onCommand:literallyStrings.insertCloseBrace",
+		"onCommand:literallyStrings.insertCloseParen",
+		"onCommand:literallyStrings.insertSemiColon"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"keybindings": [
 			{
-				"command": "extension.ls-single-quote",
+				"command": "literallyStrings.singleQuote",
 				"key": "'",
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "extension.ls-double-quote",
+				"command": "literallyStrings.doubleQuote",
 				"key": "shift+'",
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "extension.ls-back-tick-quote",
+				"command": "literallyStrings.backTickQuote",
 				"key": "`",
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "extension.ls-insert-interpolation",
+				"command": "literallyStrings.insertInterpolation",
 				"key": "shift+4",
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "extension.ls-insert-open-curly",
+				"command": "literallyStrings.insertOpenCurly",
 				"key": "shift+[",
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "extension.ls-insert-close-curly",
+				"command": "literallyStrings.insertCloseCurly",
 				"key": "shift+]",
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "extension.ls-insert-close-brace",
+				"command": "literallyStrings.insertCloseBrace",
 				"key": "]",
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "extension.ls-insert-close-paren",
+				"command": "literallyStrings.insertCloseParen",
 				"key": "shift+0",
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "extension.ls-insert-semi-colon",
+				"command": "literallyStrings.insertSemiColon",
 				"key": ";",
 				"when": "editorTextFocus && !editorReadonly"
 			}
@@ -86,8 +89,8 @@
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^8.10.25",
 		"tslint": "^5.8.0",
-		"typescript": "^3.1.4",
-		"vscode": "^1.1.25"
+		"typescript": "^3.7.5",
+		"vscode": "^1.1.36"
 	},
 	"dependencies": {}
 }
